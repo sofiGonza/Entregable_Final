@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DolarApi · Cotizaciones América Latina</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-symbol">$</span>
+        <span class="logo-text">DolarApi<span class="logo-dot">.com</span></span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" data-view="dashboard">Panel</button>
+        <button class="nav-btn" data-view="conversor">Conversor</button>
+      </nav>
+      <div class="header-status">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Conectando…</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker" id="ticker">
+      <span class="ticker-item">Cargando cotizaciones…</span>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+     <!-- ====================================================== 
+      DASHBOARD PRINCIPAL Vista principal de la aplicación.
+       Aquí se muestran: 
+       - Países disponibles 
+       - Cotizaciones 
+       - Endpoint seleccionado 
+       - Actualizaciones en tiempo real 
+       ====================================================== -->
+    <section class="view active" id="view-dashboard">
+
+      <!-- ==================================================== 
+       SELECTOR DE PAÍSES 
+       Permite al usuario cambiar entre los distintos países soportados por la aplicación. Cada botón contiene: 
+       - Bandera 
+       - Nombre del país 
+       - Identificador utilizado por JavaScript 
+       El atributo data-country se utiliza para saber qué API consultar cuando el usuario hace clic. 
+       ==================================================== -->
+      <div class="country-selector" id="countrySelector">
+        <button class="country-pill active" data-country="argentina">🇦🇷 Argentina</button>
+        <button class="country-pill" data-country="chile">🇨🇱 Chile</button>
+        <button class="country-pill" data-country="venezuela">🇻🇪 Venezuela</button>
+        <button class="country-pill" data-country="colombia">🇨🇴 Colombia</button>
+        <button class="country-pill" data-country="mexico">🇲🇽 México</button>
+        <button class="country-pill" data-country="uruguay">🇺🇾 Uruguay</button>
+        <button class="country-pill" data-country="bolivia">🇧🇴 Bolivia</button>
+        <button class="country-pill" data-country="brasil">🇧🇷 Brasil</button>
+      </div>
+
+      <!-- Tabs de endpoints por país -->
+       <!-- ==================================================== 
+        CONTENEDOR DE ENDPOINTS 
+        Se genera dinámicamente mediante JavaScript. Su función es mostrar los distintos tipos de cotizaciones disponibles para cada país. Ejemplo: 
+        Argentina: 
+        - Oficial 
+        - Blue
+         - MEP 
+         - CCL 
+         Inicialmente permanece oculto hasta que se cargan los datos correspondientes.
+          ==================================================== -->
+      <div class="endpoint-tabs-wrap" id="endpointTabsWrap" style="display:none">
+        <div class="endpoint-tabs" id="endpointTabs"></div>
+      </div>
+
+      <!-- ==================================================== 
+       TARJETA HERO PRINCIPAL 
+       Área destacada donde se muestra la cotización principal seleccionada. 
+       Mientras llegan los datos desde la API se muestra una animación de carga (spinner). 
+       ==================================================== -->
+      <div class="hero-card" id="heroCard">
+        <div class="hero-loader"><div class="spinner"></div></div>
+      </div>
+
+      <!-- ==================================================== 
+       TÍTULO DE LA SECCIÓN DE COTIZACIONES 
+       Se actualiza automáticamente dependiendo del endpoint seleccionado por el usuario. 
+       ==================================================== -->
+      <div class="section-label" id="gridLabel">Cotizaciones</div>
+
+
+      <!-- ====================================================
+        GRID DE COTIZACIONES 
+        Contenedor donde JavaScript inserta dinámicamente todas las tarjetas de monedas recibidas desde la API. 
+        Ejemplos: 
+        - Dólar Oficial 
+        - Dólar Blue 
+        - Euro 
+        - Real Brasileño 
+        ==================================================== -->
+      <div class="quotes-grid" id="quotesGrid"></div>
+
+
+      <!-- ==================================================== 
+       BARRA DE ACTUALIZACIÓN Muestra: 
+       - Hora de la última actualización 
+       - Botón para recargar información manualmente 
+       El botón ejecuta nuevamente las consultas a la API. 
+       ==================================================== -->
+      <div class="update-bar" id="updateBar">
+        <span>Actualizado: <strong id="lastUpdate">–</strong></span>
+        <button class="refresh-btn" id="refreshBtn">↻ Actualizar</button>
+      </div>
+    </section>
+
+    <!-- CONVERSOR -->
+     <!-- ====================================================== 
+      CONVERSOR DE MONEDAS 
+      Segunda vista principal de la aplicación. 
+      Permite realizar conversiones entre USD y monedas locales utilizando cotizaciones en tiempo real. ====================================================== -->
+    <section class="view" id="view-conversor">
+      <div class="converter-card">
+        <h2 class="card-title">Conversor de monedas</h2>
+        <div class="converter-body">
+          <!-- ================================================ 
+           CAMPO DE MONTO 
+           Permite ingresar la cantidad de dinero que se desea convertir.
+            ================================================ -->
+          <div class="conv-group">
+            <label>Monto</label>
+            <input type="number" id="convAmount" value="100" min="0" step="any" />
+          </div>
+          <!-- ================================================ 
+           SELECCIÓN DE PAÍS 
+           Determina qué moneda local será utilizada para realizar la conversión. 
+           ================================================ -->
+
+
+          <div class="conv-group">
+            <label>País</label>
+            <select id="convCountry">
+              <option value="argentina">🇦🇷 Argentina (ARS)</option>
+              <option value="chile">🇨🇱 Chile (CLP)</option>
+              <option value="venezuela">🇻🇪 Venezuela (VES)</option>
+              <option value="colombia">🇨🇴 Colombia (COP)</option>
+              <option value="mexico">🇲🇽 México (MXN)</option>
+              <option value="uruguay">🇺🇾 Uruguay (UYU)</option>
+              <option value="bolivia">🇧🇴 Bolivia (BOB)</option>
+              <option value="brasil">🇧🇷 Brasil (BRL)</option>
+            </select>
+          </div>
+
+          <!-- ================================================ 
+           SELECCIÓN DE COTIZACIÓN 
+           Lista dinámica cargada desde la API. Dependiendo del país puede mostrar: 
+           - Dólar Oficial 
+           - Dólar Blue 
+           - Euro 
+           - Real etc. 
+           Se llena automáticamente mediante JavaScript. 
+           ================================================ -->
+          <div class="conv-group">
+            <label>Cotización</label>
+            <select id="convType"><option>Cargando…</option></select>
+          </div>
+
+          <!-- ================================================ 
+           DIRECCIÓN DE CONVERSIÓN 
+           Define el sentido de la operación: 
+           USD → Moneda local 
+           Moneda local → USD 
+           ================================================ -->
+          <div class="conv-group">
+            <label>Dirección</label>
+            <div class="conv-toggle">
+              <button class="toggle-btn active" id="toggleUsdToLocal">USD → Local</button>
+              <button class="toggle-btn" id="toggleLocalToUsd">Local → USD</button>
+            </div>
+          </div>
+          <!-- ================================================ 
+           BOTÓN DE CÁLCULO 
+           Envía la información al backend para realizar la conversión utilizando la tasa seleccionada. 
+           ================================================ -->
+          <button class="calc-btn" id="calcBtn">Calcular</button>
+        </div>
+        
+        <!-- ================================================ 
+         RESULTADO DE LA CONVERSIÓN 
+         Se encuentra oculto inicialmente. Después del cálculo se muestra aquí el valor convertido recibido desde el servidor. 
+         ================================================ -->
+        <div class="conv-result" id="convResult" style="display:none"></div>
+      </div>
+    </section>
+
+    
+
+  </main>
+
+  <footer class="footer">
+    <span>Datos de <a href="https://dolarapi.com" target="_blank">DolarApi.com</a> · Licencia MIT</span>
+    <span>Node.js · HTML / CSS / JS </span>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
