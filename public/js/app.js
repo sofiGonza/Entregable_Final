@@ -386,7 +386,7 @@ async function loadEndpoint(country, endpointId) {
   try {
     let url, data, meta;
     if (!endpointId) {
-      // Principal
+      // realiza peticion y hace  un obj js
       const res = await fetch(`${API}/${country}/cotizaciones`);
       meta = await res.json();
       if (meta.error) throw new Error(meta.error);
@@ -406,10 +406,12 @@ async function loadEndpoint(country, endpointId) {
     }
 
     const paisMeta = PAISES_META[country];
+    // organiza,mismo formato/*
     const quotes = toArray(data);
     const epMeta = endpointId ? paisMeta.endpoints.find(e => e.id === endpointId) : paisMeta.endpoints[0];
     const label = epMeta ? epMeta.label : 'Cotización';
 
+    // muestra en la pagina /*
     renderHero(quotes, meta.bandera, meta.pais, meta.moneda, label);
     renderGrid(quotes, meta.moneda, label);
     $('#lastUpdate').textContent = now();
@@ -601,6 +603,7 @@ BOTÓN DE ACTUALIZACIÓN MANUAL
 Fuerza la recarga de datos sin esperar la actualización
 automática.
 ========================================================= */
+// detecta lo q hace el us/*
 $('#refreshBtn').addEventListener('click', () => {
   loadEndpoint(state.country, state.activeEndpoint);
   loadTicker();
@@ -619,6 +622,7 @@ async function loadConversorQuotes() {
   sel.innerHTML = '<option>Cargando…</option>';
 
   try {
+    // se encarga de iniciar/*
     const res = await fetch(`${API}/${country}/cotizaciones`);
     const json = await res.json();
     const quotes = toArray(json.data).filter(q => extractPrices(q).compra != null);
@@ -863,10 +867,14 @@ Programa actualización automática cada 2 minutos
 
 Equivale al "main()" de la aplicación.
 ========================================================= */
+// se encarga de iniciar/*
 (async function init() {
+  // conectada/*
   setStatus('', 'Conectando…');
+  // crea endp/*
   renderEndpointTabs('argentina');
   await Promise.all([
+    // consulta/*
     loadEndpoint('argentina', null),
     loadTicker(),
   ]);

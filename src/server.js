@@ -20,20 +20,23 @@ express -> Framework web para Node.js
 node-fetch -> Realiza peticiones HTTP externas
 cors -> Permite comunicación entre dominios
 path -> Manejo seguro de rutas del sistema
+conversiones -> Importa la clase
 
 ========================================================= */
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const path = require('path');
+const Conversiones = require('./Classes/Conversiones');
 
 /* =========================================================
 CREACIÓN DEL SERVIDOR
 
 Inicializa Express y define el puerto donde escuchará
-las solicitudes del cliente.
+las solicitudes del cliente, tambien se realiza la creacion del objeto
 ========================================================= */
 const app = express();
+const conversiones = new Conversiones();
 const PORT = process.env.PORT || 3001;
 
 /* =========================================================
@@ -601,11 +604,8 @@ Resultado obtenido
 
 Facilita pruebas y depuración.
 ========================================================= */
-  console.log('====================');
-  console.log('CONVERSIÓN RECIBIDA');
-  console.log('Monto:', monto);
-  console.log('Tasa:', tasa);
-  console.log('Dirección:', direccion);
+ 
+ 
 
   let resultado;
 
@@ -614,14 +614,36 @@ Facilita pruebas y depuración.
   } else {
     resultado = monto / tasa;
   }
+/*objeto con los datos de la conversión realizada por el usuario. */
+  const registro = {
+    fecha: new Date(),
+    monto,
+    tasa,
+    direccion,
+    resultado
+};
+/*Envía el objeto de la conversión a la clase Conversiones para registrarlo dentro del historial. */
+conversiones.guardar(registro);
 
-  console.log('Resultado:', resultado);
-  console.log('====================');
 
   res.json({
     ok: true,
     resultado
   });
+
+});
+
+/* =========================================================
+RUTA HISTORIAL DE CONVERSIONES
+
+Devuelve todas las conversiones almacenadas en la
+clase Conversiones.
+
+La información es enviada al cliente en formato JSON.
+========================================================= */
+app.get('/api/conversiones', (req, res) => {
+
+    res.json(conversiones.obtenerHistorial());
 
 });
 /* =========================================================
